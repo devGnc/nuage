@@ -180,7 +180,7 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 
 .top {
@@ -196,7 +196,7 @@ a {
 .wordmark {
   position: absolute;
   top: max(18px, env(safe-area-inset-top));
-  left: 22px;
+  left: max(22px, env(safe-area-inset-left));
   font-family: 'Outfit', var(--ui);
   font-weight: 700;
   font-size: 20px;
@@ -909,9 +909,13 @@ a {
   margin: 0;
   font-size: 16px;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .panel-icon {
+  flex: none;
   display: grid;
   place-items: center;
   width: 32px;
@@ -925,6 +929,7 @@ a {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
 }
 
 .panel-body {
@@ -1133,6 +1138,7 @@ textarea.input {
 
 .select.small {
   height: 32px;
+  min-width: 0;
   max-width: 150px;
 }
 
@@ -1954,6 +1960,8 @@ textarea.input {
   bottom: 0;
   width: min(900px, 100vw);
   display: flex;
+  /* plein écran sur téléphone : rien sous la barre d'état, l'encoche ou la barre d'accueil */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   color: var(--text);
   background: rgba(13, 15, 28, 0.985);
   border-right: 1px solid var(--line);
@@ -2756,7 +2764,7 @@ kbd {
   position: fixed;
   z-index: 50;
   left: 50%;
-  top: 22px;
+  top: max(22px, env(safe-area-inset-top));
   transform: translateX(-50%);
   padding: 10px 16px;
   border-radius: 12px;
@@ -2864,6 +2872,18 @@ kbd {
 
   .recent-when {
     display: none;
+  }
+}
+
+/* ——— iPhone et iPad ——— */
+
+/* Safari iOS zoome sur tout champ dont le texte fait moins de 16 px : on les remonte à 16 px. */
+@supports (-webkit-touch-callout: none) {
+  .input:not(.note-title),
+  .select,
+  .numfield input,
+  .editor .ProseMirror {
+    font-size: 16px;
   }
 }
 

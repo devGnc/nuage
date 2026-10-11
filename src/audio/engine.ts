@@ -59,6 +59,19 @@ export async function resumeAudio() {
   }
 }
 
+type AudioSessionType = 'auto' | 'playback' | 'transient' | 'transient-solo' | 'ambient' | 'play-and-record'
+const session = typeof navigator !== 'undefined' ? (navigator as Navigator & { audioSession?: { type: AudioSessionType } }).audioSession : undefined
+
+/**
+ * Par défaut, Safari iOS (17+) coupe Web Audio quand l'iPhone est en mode silencieux.
+ * Pendant que des ambiances jouent, on passe en session « lecture », comme une vidéo ou de la musique.
+ * Les alertes seules gardent le comportement par défaut et ne coupent pas la musique des autres apps.
+ */
+export function setMediaPlayback(on: boolean) {
+  const type: AudioSessionType = on ? 'playback' : 'auto'
+  if (session && session.type !== type) session.type = type
+}
+
 /** Les navigateurs exigent un geste avant de produire du son : on débloque au premier clic ou touche. */
 export function installAudioUnlock() {
   const unlock = () => {
