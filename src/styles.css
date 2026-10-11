@@ -49,8 +49,13 @@ body,
   overflow: hidden;
 }
 
-body {
+/* Couleur de repli de la page, remplacée par celle du bas du thème (Background.tsx) :
+   iOS la montre là où le fond n'arrive pas, comme sous la barre flottante de Safari. */
+html {
   background: #0f1226;
+}
+
+body {
   color: var(--text);
   font-family: var(--ui);
   -webkit-font-smoothing: antialiased;
@@ -2030,6 +2035,8 @@ textarea.input {
 .drawer-main {
   flex: 1;
   min-width: 0;
+  /* en colonne (téléphone), sans ça le contenu s'étire au lieu de défiler */
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
