@@ -101,8 +101,10 @@ a {
 
 /* ——— Fond ——— */
 
+/* Absolu et non fixe (la page ne défile pas) : Safari 26 colore ses barres d'après un élément fixe
+   collé au bord, et ce calque sans couleur propre les rendait noires. */
 .bg {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
@@ -144,6 +146,38 @@ a {
   background: #000;
   pointer-events: none;
   transition: opacity 0.3s;
+}
+
+/* Filets aux couleurs du haut et du bas du thème, que Safari 26 (iPhone, iPad) reprend pour sa barre
+   d'état et sa barre d'outils. Collés à ces barres, ils s'y fondent. Inutiles ailleurs et en app installée. */
+.bg-edge {
+  display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .bg-edge {
+    display: block;
+    position: fixed;
+    z-index: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    pointer-events: none;
+  }
+
+  .bg-edge-top {
+    top: 0;
+  }
+
+  .bg-edge-bottom {
+    bottom: 0;
+  }
+
+  @media (display-mode: standalone) {
+    .bg-edge {
+      display: none;
+    }
+  }
 }
 
 .bg-video {

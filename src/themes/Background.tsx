@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { loadBlob } from '../lib/idb'
 import { useSettings } from '../store/settings'
 import type { Mode } from '../types'
@@ -36,12 +36,27 @@ export function themeInk(id: string): 'light' | 'dark' {
   return THEME_MAP.get(id)?.ink === 'dark' ? 'dark' : 'light'
 }
 
-/** Couleur du bas du fond : le dernier code hexadécimal du CSS, soit la fin du dégradé principal. */
-function themeEdge(id: string): string {
-  if (id.startsWith(YT_PREFIX)) return '#000'
-  if (id === UPLOAD_ID || id.startsWith(URL_PREFIX)) return '#111'
-  const hexes = (THEME_MAP.get(id) ?? THEME_MAP.get('aube')!).bg.match(/#[0-9a-f]{3,8}\b/gi)
-  return hexes ? hexes[hexes.length - 1] : '#0f1226'
+const HEX = /#[0-9a-f]{3,8}\b/gi
+
+/** Couleurs du haut et du bas du fond : début et fin du dernier dégradé linéaire, sinon sa dernière couleur. */
+function themeEdges(id: string): { top: string; bottom: string } {
+  if (id.startsWith(YT_PREFIX)) return { top: '#000', bottom: '#000' }
+  if (id === UPLOAD_ID || id.startsWith(URL_PREFIX)) return { top: '#111', bottom: '#111' }
+  const bg = (THEME_MAP.get(id) ?? THEME_MAP.get('aube')!).bg
+  const linear = (bg.match(/linear-gradient\((?:[^()]|\([^()]*\))*\)/g) ?? []).map((g) => g.match(HEX)).filter((h): h is RegExpMatchArray => h !== null)
+  const stops = linear[linear.length - 1]
+  if (stops) return { top: stops[0], bottom: stops[stops.length - 1] }
+  const all = bg.match(HEX)
+  const c = all ? all[all.length - 1] : '#0f1226'
+  return { top: c, bottom: c }
+}
+
+/** Assombrit une couleur comme le voile noir posé sur le fond. */
+function shade(hex: string, dim: number): string {
+  let h = hex.slice(1)
+  if (h.length <= 4) h = [...h].map((c) => c + c).join('')
+  const [r, g, b] = [0, 2, 4].map((i) => Math.round(parseInt(h.slice(i, i + 2), 16) * (1 - dim)))
+  return `rgb(${r}, ${g}, ${b})`
 }
 
 export function YouTubeBackground({ id }: { id: string }) {
@@ -64,10 +79,14 @@ export function Background({ mode, uploadVersion }: { mode: Mode; uploadVersion:
     document.documentElement.dataset.ink = themeInk(themeId)
   }, [themeId])
 
-  // iOS 26 n'affiche pas le fond fixe sous la barre flottante de Safari : la page y montre sa propre couleur.
-  useEffect(() => {
-    document.documentElement.style.backgroundColor = `color-mix(in srgb, ${themeEdge(themeId)}, #000 ${Math.round(dim * 100)}%)`
-  }, [themeId, dim])
+  const edges = themeEdges(themeId)
+  const top = shade(edges.top, dim)
+  const bottom = shade(edges.bottom, dim)
+
+  // couleur de la page, visible là où le fond ne va pas
+  useLayoutEffect(() => {
+    document.documentElement.style.backgroundColor = bottom
+  }, [bottom])
 
   let layer: React.ReactNode = null
   const def = resolveTheme(themeId)
@@ -98,10 +117,15 @@ export function Background({ mode, uploadVersion }: { mode: Mode; uploadVersion:
   }
 
   return (
-    <div className="bg" key={themeId + mode} style={{ filter: blur ? `blur(${blur}px)` : undefined, transform: blur ? 'scale(1.05)' : undefined }}>
-      {layer}
-      <div className="bg-grain" />
-      <div className="bg-dim" style={{ opacity: dim }} />
-    </div>
+    <>
+      <div className="bg" key={themeId + mode} style={{ filter: blur ? `blur(${blur}px)` : undefined, transform: blur ? 'scale(1.05)' : undefined }}>
+        {layer}
+        <div className="bg-grain" />
+        <div className="bg-dim" style={{ opacity: dim }} />
+      </div>
+      {/* hors de .bg : son flou (transform) décalerait ces éléments fixes */}
+      <div className="bg-edge bg-edge-top" style={{ backgroundColor: top }} />
+      <div className="bg-edge bg-edge-bottom" style={{ backgroundColor: bottom }} />
+    </>
   )
 }
