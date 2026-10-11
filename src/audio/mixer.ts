@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { audio, resumeAudio } from './engine'
+import { audio, resumeAudio, setMediaPlayback } from './engine'
 import { Kit, LEVELS, SOUND_MAP } from './sounds'
 
 interface Instance {
@@ -50,6 +50,7 @@ export function syncMix(mix: Record<string, number>, master: number, playing: bo
   const { ctx, soundsBus } = audio()
   soundsBus.gain.setTargetAtTime(curve(master), ctx.currentTime, 0.1)
   const wanted = playing ? mix : {}
+  setMediaPlayback(Object.keys(wanted).length > 0)
   for (const id of [...active.keys()]) if (!(id in wanted)) stopSound(id)
   for (const [id, vol] of Object.entries(wanted)) {
     const inst = active.get(id)
