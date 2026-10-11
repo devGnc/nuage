@@ -16,6 +16,8 @@ const fr = {
   'common.confirm': 'Confirmer',
   'common.copy': 'Copier',
   'common.copied': 'Copié !',
+  'common.numEmpty': 'Indique une valeur',
+  'common.numRange': 'Entre {min} et {max}',
 
   'mode.home': 'Accueil',
   'mode.focus': 'Focus',
@@ -369,6 +371,8 @@ const en: Dict = {
   'common.confirm': 'Confirm',
   'common.copy': 'Copy',
   'common.copied': 'Copied!',
+  'common.numEmpty': 'Enter a value',
+  'common.numRange': 'Between {min} and {max}',
 
   'mode.home': 'Home',
   'mode.focus': 'Focus',

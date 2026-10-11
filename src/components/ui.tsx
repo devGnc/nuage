@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { useT } from '../i18n'
 
 export function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
@@ -81,20 +82,35 @@ export function Select<T extends string>({ value, options, onChange, label }: { 
 }
 
 export function NumberField({ value, onChange, min = 1, max = 600, suffix }: { value: number; onChange: (v: number) => void; min?: number; max?: number; suffix?: string }) {
+  const t = useT()
+  // Saisie libre (champ vide, valeur hors bornes) : seule une valeur valide est enregistrée.
+  const [draft, setDraft] = useState(String(value))
+  useEffect(() => setDraft((d) => (d.trim() !== '' && Number(d) === value ? d : String(value))), [value])
+  const valid = (d: string) => d.trim() !== '' && Number.isInteger(Number(d)) && Number(d) >= min && Number(d) <= max
+  const error = draft.trim() === '' ? t('common.numEmpty') : valid(draft) ? '' : t('common.numRange', { min, max })
   return (
-    <label className="numfield">
-      <input
-        type="number"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => {
-          const v = Math.round(Number(e.target.value))
-          if (!Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v)))
-        }}
-      />
-      {suffix && <span>{suffix}</span>}
-    </label>
+    <div className="numfield-wrap">
+      <label className="numfield">
+        <input
+          type="number"
+          inputMode="numeric"
+          min={min}
+          max={max}
+          value={draft}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            setDraft(e.target.value)
+            if (valid(e.target.value)) onChange(Number(e.target.value))
+          }}
+        />
+        {suffix && <span>{suffix}</span>}
+      </label>
+      {error && (
+        <span className="numfield-error" role="alert">
+          {error}
+        </span>
+      )}
+    </div>
   )
 }
 

@@ -2197,6 +2197,23 @@ textarea.input {
   font-variant-numeric: tabular-nums;
 }
 
+.numfield input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.numfield-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.numfield-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
 .slider-row {
   display: grid;
   grid-template-columns: 110px 1fr;
