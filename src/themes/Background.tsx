@@ -36,6 +36,14 @@ export function themeInk(id: string): 'light' | 'dark' {
   return THEME_MAP.get(id)?.ink === 'dark' ? 'dark' : 'light'
 }
 
+/** Couleur du bas du fond : le dernier code hexadécimal du CSS, soit la fin du dégradé principal. */
+function themeEdge(id: string): string {
+  if (id.startsWith(YT_PREFIX)) return '#000'
+  if (id === UPLOAD_ID || id.startsWith(URL_PREFIX)) return '#111'
+  const hexes = (THEME_MAP.get(id) ?? THEME_MAP.get('aube')!).bg.match(/#[0-9a-f]{3,8}\b/gi)
+  return hexes ? hexes[hexes.length - 1] : '#0f1226'
+}
+
 export function YouTubeBackground({ id }: { id: string }) {
   const src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&iv_load_policy=3&disablekb=1&modestbranding=1`
   return (
@@ -55,6 +63,11 @@ export function Background({ mode, uploadVersion }: { mode: Mode; uploadVersion:
   useEffect(() => {
     document.documentElement.dataset.ink = themeInk(themeId)
   }, [themeId])
+
+  // iOS 26 n'affiche pas le fond fixe sous la barre flottante de Safari : la page y montre sa propre couleur.
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = `color-mix(in srgb, ${themeEdge(themeId)}, #000 ${Math.round(dim * 100)}%)`
+  }, [themeId, dim])
 
   let layer: React.ReactNode = null
   const def = resolveTheme(themeId)
