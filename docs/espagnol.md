@@ -1,6 +1,6 @@
 # Plateforme de révisions — plan
 
-**Statut : en préparation.** La suite (lanceur, paramètres généraux, thème commun) est en place ; l'outil Espagnol n'est encore qu'une page d'attente. Ce document rassemble les décisions prises avant d'écrire le code ; la base de données, elle, est prête dans [`supabase/schema.sql`](../supabase/schema.sql).
+**Statut : en cours.** La suite (lanceur, paramètres généraux, thème commun) et la première version de l'outil Espagnol (import, cartes, fiches, séance du jour, synchro) sont en place. Viennent ensuite les objectifs, puis les exercices. Ce document rassemble les décisions prises avant d'écrire le code ; la base de données, elle, est prête dans [`supabase/schema.sql`](../supabase/schema.sql).
 
 ## Décisions prises
 
@@ -71,7 +71,7 @@ Les objectifs et le rythme sont des réglages : ils sont rangés avec les param�
 ## Étapes
 
 1. **La suite** ✅ : lanceur, adresse par outil, paramètres généraux, thème commun. Le Pomodoro est réorganisé sans rien perdre.
-2. **Le moteur de révision et l'outil Espagnol** : import (Anki, CSV, Markdown), liste des éléments, séance du jour avec FSRS.
+2. **Le moteur de révision et l'outil Espagnol** ✅ : import (Anki, CSV, Markdown), liste des éléments, fiches, séance du jour avec FSRS, synchro. En attendant les objectifs, les nouvelles cartes sont prises à tour de rôle dans chaque paquet (le Top 5000 par rang de fréquence).
 3. **Les objectifs** : création, priorités, projection, mode pause.
 4. **Les exercices** : réponse tapée, écoute et dictée, conjugaison, phrases à trous.
 5. **Les stats communes** : temps par outil, révisions, progression des objectifs.

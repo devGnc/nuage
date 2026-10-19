@@ -4,6 +4,8 @@ import { useNotes } from '../store/notes'
 import { useStats } from '../store/stats'
 import { useTasks } from '../store/tasks'
 import type { Note, SessionLog, Task, TaskDoneLog } from '../types'
+import type { ProgressMap } from '../study/store'
+import type { StudyItem, StudyReview } from '../study/types'
 
 export interface Backup {
   app: 'nuage'
@@ -13,10 +15,16 @@ export interface Backup {
   tasks: Task[]
   notes: Note[]
   stats: { sessions: SessionLog[]; activeDays: string[]; tasksDone: TaskDoneLog[] }
+  /** révisions (toutes matières) */
+  study?: { items: StudyItem[]; progress: ProgressMap; reviews: StudyReview[] }
 }
 
-export function makeBackup(): Backup {
+export async function makeBackup(): Promise<Backup> {
   const st = useStats.getState()
+  // les données de révision sont chargées à la demande : on les lit avant d'exporter
+  const { loadStudy, useStudy } = await import('../study/store')
+  await loadStudy()
+  const study = useStudy.getState()
   return {
     app: 'nuage',
     version: 1,
@@ -25,10 +33,11 @@ export function makeBackup(): Backup {
     tasks: useTasks.getState().tasks,
     notes: useNotes.getState().notes,
     stats: { sessions: st.sessions, activeDays: st.activeDays, tasksDone: st.tasksDone },
+    study: { items: Object.values(study.items), progress: study.progress, reviews: study.reviews },
   }
 }
 
-export function restoreBackup(raw: unknown): boolean {
+export async function restoreBackup(raw: unknown): Promise<boolean> {
   const b = raw as Partial<Backup>
   if (!b || b.app !== 'nuage' || typeof b !== 'object') return false
   if (b.settings) {
@@ -45,6 +54,14 @@ export function restoreBackup(raw: unknown): boolean {
       activeDays: Array.isArray(b.stats.activeDays) ? b.stats.activeDays : [],
       tasksDone: Array.isArray(b.stats.tasksDone) ? b.stats.tasksDone : [],
     })
+  }
+  if (b.study && Array.isArray(b.study.items)) {
+    // fusion : la version la plus récente de chaque ligne gagne, puis tout repart vers le compte
+    const { loadStudy, mergeRemote, markAllDirty } = await import('../study/store')
+    await loadStudy()
+    const progress = Object.values(b.study.progress ?? {}).flatMap((bySkill) => Object.values(bySkill))
+    mergeRemote({ items: b.study.items, progress, reviews: Array.isArray(b.study.reviews) ? b.study.reviews : [] })
+    markAllDirty()
   }
   return true
 }

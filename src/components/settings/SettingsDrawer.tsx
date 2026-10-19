@@ -1,4 +1,4 @@
-import { ChartColumn, CircleHelp, Clock, Database, Palette, Quote, SlidersHorizontal, Timer, User, X } from 'lucide-react'
+import { ChartColumn, CircleHelp, Clock, Database, Languages, Palette, Quote, SlidersHorizontal, Timer, User, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useT } from '../../i18n'
 import { useUI } from '../../store/ui'
@@ -7,6 +7,7 @@ import { ALL_TABS, SETTINGS_GROUPS } from './tabs'
 import { AccountSettings } from './AccountSettings'
 import { ClockSettings } from './ClockSettings'
 import { DataSettings } from './DataSettings'
+import { EspagnolSettings } from './EspagnolSettings'
 import { ExtrasSettings } from './ExtrasSettings'
 import { HelpSettings } from './HelpSettings'
 import { QuotesSettings } from './QuotesSettings'
@@ -24,6 +25,7 @@ const ICONS: Record<SettingsTab, React.ReactNode> = {
   clock: <Clock size={17} />,
   stats: <ChartColumn size={17} />,
   quotes: <Quote size={17} />,
+  espagnol: <Languages size={17} />,
 }
 
 const SUBTITLE = {
@@ -36,6 +38,7 @@ const SUBTITLE = {
   account: 'account.subtitle',
   data: 'data.subtitle',
   help: 'help.subtitle',
+  espagnol: 'es.set.subtitle',
 } as const
 
 export function SettingsDrawer() {
@@ -96,6 +99,7 @@ export function SettingsDrawer() {
                 {tab === 'account' && <AccountSettings />}
                 {tab === 'data' && <DataSettings />}
                 {tab === 'help' && <HelpSettings />}
+                {tab === 'espagnol' && <EspagnolSettings />}
               </>
             )}
           </div>

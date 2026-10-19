@@ -17,7 +17,7 @@ export function DataSettings() {
     <div className="settings-page">
       <Section>
         <Row label={t('data.export')} desc={t('data.exportDesc')}>
-          <button type="button" className="btn" onClick={() => downloadText(`nuage-${dayKey()}.json`, JSON.stringify(makeBackup(), null, 2), 'application/json')}>
+          <button type="button" className="btn" onClick={async () => downloadText(`nuage-${dayKey()}.json`, JSON.stringify(await makeBackup(), null, 2), 'application/json')}>
             <Download size={15} /> JSON
           </button>
         </Row>
@@ -34,7 +34,7 @@ export function DataSettings() {
               const f = e.target.files?.[0]
               if (!f) return
               try {
-                const ok = restoreBackup(JSON.parse(await f.text()))
+                const ok = await restoreBackup(JSON.parse(await f.text()))
                 setMsg(ok ? t('data.importOk') : t('data.importErr'))
               } catch {
                 setMsg(t('data.importErr'))

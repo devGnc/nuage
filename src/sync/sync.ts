@@ -123,6 +123,14 @@ async function pullSessions() {
   if (out.length) useStats.getState().merge({ sessions: out })
 }
 
+/** Synchros supplémentaires des outils (révisions…), lancées après celle du Pomodoro.
+ *  Un outil chargé à la demande s'inscrit ici quand on l'ouvre. */
+const extraTasks = new Set<() => Promise<void>>()
+export function registerSyncTask(fn: () => Promise<void>) {
+  extraTasks.add(fn)
+  return () => extraTasks.delete(fn)
+}
+
 let running: Promise<void> | null = null
 
 export function syncNow(): Promise<void> {
@@ -150,6 +158,7 @@ export function syncNow(): Promise<void> {
       }
       await pullSessions()
       await pushSessions(firstOnDevice)
+      for (const task of extraTasks) await task()
       const now = Date.now()
       localStorage.setItem('nuage:lastSync', String(now))
       useSync.setState({ status: 'idle', lastSync: now })

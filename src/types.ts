@@ -6,7 +6,7 @@ export type TimerStyle = 'default' | 'flip' | 'bar' | 'gauge' | 'dots' | 'pie'
 export type FlipTheme = 'dark' | 'light' | 'accent' | 'glass'
 export type ClockSize = 's' | 'm' | 'l'
 export type Greetings = 'dynamic' | 'generic' | 'off'
-export type SettingsTab = 'themes' | 'clock' | 'timer' | 'stats' | 'quotes' | 'extras' | 'account' | 'data' | 'help'
+export type SettingsTab = 'themes' | 'clock' | 'timer' | 'stats' | 'quotes' | 'extras' | 'account' | 'data' | 'help' | 'espagnol'
 export type QuoteCategory = 'all' | 'motivation' | 'discipline' | 'wisdom' | 'calm' | 'mine'
 
 export interface Lengths {
