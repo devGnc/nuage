@@ -34,7 +34,7 @@ export default function EspagnolTool() {
   const view = !ready ? null
     : route.section === 'course' ? (route.lesson ? <LessonPlayer id={route.lesson} /> : <CourseHome />)
     : route.section === 'review' ? <Review />
-    : <Notebook tab={route.tab} note={route.note} />
+    : <Notebook tab={route.tab} item={route.item} />
 
   return (
     <main

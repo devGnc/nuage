@@ -117,6 +117,16 @@ function CheckBar({ disabled, onCheck, label }: { disabled?: boolean; onCheck: (
   )
 }
 
+/** Barre du bas des exercices corrigés au clic : une consigne à la place du bouton, pour que l'écran ne bouge pas. */
+function HintBar({ text, keys }: { text: string; keys?: string }) {
+  return (
+    <div className="es-foot es-hintbar">
+      <p>{text}</p>
+      {keys && <span className="es-keys">{keys}</span>}
+    </div>
+  )
+}
+
 /** Touches 1 à 9 pour les choix, hors champ de saisie. */
 function useDigits(n: number, onPick: (i: number) => void, active: boolean) {
   useEffect(() => {
@@ -140,6 +150,7 @@ function Prompt({ children }: { children: ReactNode }) {
 }
 
 function Choice({ e, seed, answer, submit }: KindProps<Of<'choice'>>) {
+  const t = useT()
   const options = useMemo(() => shuffled(e.options, seed), [e, seed])
   const right = e.options[0]
   const [picked, setPicked] = useState<string | null>(null)
@@ -169,6 +180,7 @@ function Choice({ e, seed, answer, submit }: KindProps<Of<'choice'>>) {
           )
         })}
       </div>
+      {!answer && <HintBar text={t('es.hint.choice')} keys={t('es.hint.keys', { n: options.length })} />}
     </>
   )
 }
@@ -208,6 +220,7 @@ function TrueFalse({ e, answer, submit }: KindProps<Of<'truefalse'>>) {
           {showDlg && <DialogueView d={d} compact showTitle={false} />}
         </div>
       )}
+      {!answer && <HintBar text={t('es.hint.tf')} keys={t('es.hint.keysTf')} />}
     </>
   )
 }
@@ -276,6 +289,7 @@ function Match({ e, seed, answer, submit }: KindProps<Of<'match'>>) {
           ))}
         </div>
       </div>
+      {!answer && <HintBar text={t('es.hint.match')} />}
     </>
   )
 }
