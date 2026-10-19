@@ -80,7 +80,7 @@ Le workflow `.github/workflows/deploy.yml` construit et publie l'app à chaque p
 Sans Supabase, tout est enregistré dans le navigateur. Pour retrouver tes réglages, tâches, notes et stats sur plusieurs appareils :
 
 1. Crée un projet gratuit sur [supabase.com](https://supabase.com). Le même projet peut servir à d'autres outils : son nom n'a pas besoin d'être « Nuage ».
-2. Dans **SQL Editor**, colle le contenu de [`supabase/schema.sql`](supabase/schema.sql) et exécute-le. Il crée les tables de Nuage et celles du futur espace Espagnol ([plan](docs/espagnol.md)), toutes protégées par Row Level Security : chaque utilisateur ne voit que ses propres données. Le script peut être relancé sans risque.
+2. Dans **SQL Editor**, colle le contenu de [`supabase/schema.sql`](supabase/schema.sql) et exécute-le. Il crée les tables du Pomodoro et celles des futurs outils de révision ([plan](docs/espagnol.md)), toutes protégées par Row Level Security : chaque utilisateur ne voit que ses propres données. Le script peut être relancé sans risque.
 3. Dans **Authentication → URL Configuration**, mets `https://devgnc.github.io/nuage/` comme **Site URL** et ajoute-la aux **Redirect URLs**.
 4. Récupère l'URL du projet et la clé publique (**publishable** ou **anon**) via le bouton **Connect** du projet, ou dans **Settings → API Keys**. Cette clé est faite pour être exposée dans une app web : ce sont les règles RLS qui protègent les données. N'utilise jamais la clé secrète.
 5. Deux options :
