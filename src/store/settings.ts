@@ -65,8 +65,10 @@ export interface Settings {
   musicFavorites: MusicFavorite[]
 
   // Espagnol
-  esNewPerDay: number
-  esMaxReviews: number
+  /** nombre de mots par séance de révision */
+  esReviewSize: number
+  /** accepter une réponse sans accent ou avec une petite faute (en la signalant) */
+  esAccentTolerant: boolean
   /** voix choisie (identifiant du navigateur) ; vide = automatique */
   esVoice: string
   esAutoSpeak: boolean
@@ -131,10 +133,10 @@ export const defaultSettings: Settings = {
   musicVolume: 0.7,
   musicFavorites: [],
 
-  esNewPerDay: 15,
-  esMaxReviews: 200,
+  esReviewSize: 15,
+  esAccentTolerant: true,
   esVoice: '',
-  esAutoSpeak: false,
+  esAutoSpeak: true,
 }
 
 interface SettingsStore extends Settings {

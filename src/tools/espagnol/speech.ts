@@ -19,17 +19,36 @@ export function onVoicesChanged(fn: () => void): () => void {
   return () => speechSynthesis.removeEventListener('voiceschanged', fn)
 }
 
-/** Lit un texte en espagnol. Les précisions entre parenthèses ou crochets ne sont pas lues. */
-export function speak(text: string, voiceURI = '') {
-  if (!speechSupported()) return
-  const clean = text.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim()
-  if (!clean) return
-  speechSynthesis.cancel()
+/** Lit un texte en espagnol. Les précisions entre parenthèses ou crochets et les « … » ne sont pas lus.
+ *  `voice` : la voix choisie dans les paramètres ; `alt` : prendre une autre voix (deuxième personnage d'un dialogue). */
+export function speak(text: string, opts: { voice?: string; alt?: boolean; rate?: number; onEnd?: () => void; queue?: boolean } = {}) {
+  if (!speechSupported()) {
+    opts.onEnd?.()
+    return
+  }
+  const clean = text.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(/…/g, ' ').replace(/\s\/\s/g, ', ').replace(/\s+/g, ' ').trim()
+  if (!clean) {
+    opts.onEnd?.()
+    return
+  }
+  if (!opts.queue) speechSynthesis.cancel()
   const u = new SpeechSynthesisUtterance(clean)
   const voices = spanishVoices()
-  const voice = voices.find((v) => v.voiceURI === voiceURI) ?? voices[0]
+  const main = voices.find((v) => v.voiceURI === opts.voice) ?? voices[0]
+  const other = voices.find((v) => v !== main && v.lang.toLowerCase() === main?.lang.toLowerCase()) ?? voices.find((v) => v !== main)
+  const voice = opts.alt ? (other ?? main) : main
   if (voice) u.voice = voice
   u.lang = voice?.lang ?? 'es-ES'
-  u.rate = 0.92
+  u.rate = opts.rate ?? 0.92
+  // sans deuxième voix, on change un peu la hauteur pour distinguer les personnages
+  if (opts.alt && !other) u.pitch = 1.25
+  if (opts.onEnd) {
+    u.onend = () => opts.onEnd?.()
+    u.onerror = () => opts.onEnd?.()
+  }
   speechSynthesis.speak(u)
+}
+
+export function stopSpeaking() {
+  if (speechSupported()) speechSynthesis.cancel()
 }

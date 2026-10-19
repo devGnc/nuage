@@ -74,4 +74,3 @@ export interface StudyReview {
   at: number
 }
 
-export const REVIEWABLE_KINDS = ['vocab', 'verb', 'phrase']

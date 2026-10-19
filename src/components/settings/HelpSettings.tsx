@@ -20,10 +20,8 @@ const POMODORO: [string, TKey][] = [
 ]
 
 const ESPAGNOL: [string, TKey][] = [
-  ['Espace / Space', 'help.k.esReveal'],
-  ['1 · 2 · 3 · 4', 'help.k.esGrade'],
-  ['L', 'help.k.esListen'],
-  ['Ctrl+Z', 'help.k.esUndo'],
+  ['Entrée / Enter', 'help.k.esEnter'],
+  ['1 · 2 · 3 · 4', 'help.k.esPick'],
 ]
 
 function Keys({ list }: { list: [string, TKey][] }) {
