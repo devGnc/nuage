@@ -1,10 +1,10 @@
--- Schéma Supabase commun : Nuage + espace Espagnol.
--- Un seul projet Supabase (et un seul compte) pour les deux outils.
+-- Schéma Supabase de Nuage : le Pomodoro et les outils de révision (espagnol, puis d'autres matières).
+-- Un seul projet Supabase et un seul compte pour tous les outils.
 -- À coller dans Supabase → SQL Editor → New query → Run.
 -- Le script peut être relancé sans risque : il ne supprime aucune donnée.
 
 -- ============================================================
--- Nuage
+-- Pomodoro (réglages communs, tâches, notes, sessions)
 -- ============================================================
 
 -- Réglages, tâches, notes et compteurs : un document JSON par utilisateur.
@@ -57,55 +57,64 @@ create policy "sessions_delete_own" on public.focus_sessions for delete using ((
 grant select, insert, update, delete on public.user_state, public.focus_sessions to authenticated;
 
 -- ============================================================
--- Espagnol
+-- Révisions (toutes matières : espagnol, puis d'autres outils)
 -- ============================================================
 -- Fonctionnement prévu (voir docs/espagnol.md) : l'app garde tout sur l'appareil
 -- et marche hors ligne ; la synchro envoie et récupère ligne par ligne.
+--   subject    : la matière (« es » pour l'espagnol), une seule série de tables pour toutes ;
+--   id         : unique par compte, ce qui permet des identifiants stables pour le contenu
+--                importé (« anki:… ») ou fourni avec l'app (« nuage:… ») : réimporter ne crée
+--                pas de doublon, même depuis deux appareils ;
 --   updated_at : heure de modification sur l'appareil, départage deux appareils ;
 --   synced_at  : heure d'arrivée sur le serveur, permet de ne récupérer que les nouveautés ;
 --   deleted_at : une suppression est enregistrée (et donc synchronisée) au lieu d'effacer la ligne.
 
--- Le contenu : un mot, un verbe, une expression ou un point de grammaire.
-create table if not exists public.es_items (
-  id text primary key,
+-- Le contenu : un mot, un verbe, une expression, une fiche de grammaire, une question de cours…
+create table if not exists public.study_items (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  kind text not null default 'vocab' check (kind in ('vocab', 'verb', 'phrase', 'grammar')),
-  es text not null,
-  fr text not null,
+  id text not null,
+  subject text not null,
+  -- « vocab », « verb », « phrase », « grammar »… libre, selon la matière
+  kind text not null default 'card',
+  -- pour une langue : le mot étranger et sa traduction ; sinon : question et réponse
+  front text not null,
+  back text not null,
   example text,
-  theme text,
-  -- infos propres au type : genre, verbe irrégulier, phrases à trous…
+  topic text,
+  -- origine : « nuage » (contenu fourni avec l'app), « anki », « perso »…
+  source text,
+  -- infos propres au type : niveau, genre, traduction anglaise, variante d'Amérique latine…
   extra jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
   synced_at timestamptz not null default now(),
-  unique (id, user_id)
+  primary key (user_id, id)
 );
 
 -- La mémorisation : un suivi de répétition espacée par élément et par compétence
--- (« recognize » es→fr, « produce » fr→es tapé, « listen » dictée, « conj:preterito »…).
--- Ainsi « hablar » peut être acquis en lecture mais encore fragile au passé simple.
-create table if not exists public.es_progress (
+-- (« recognize » espagnol → français, « produce » réponse tapée, « listen » dictée,
+-- « conj:preterito » conjugaison à un temps…). « hablar » peut ainsi être acquis
+-- en lecture mais encore fragile au passé simple.
+create table if not exists public.study_progress (
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   item_id text not null,
   skill text not null,
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   -- état de l'algorithme (stabilité, difficulté, répétitions, oublis…)
   srs jsonb not null default '{}'::jsonb,
   due_at timestamptz,
   suspended boolean not null default false,
   updated_at timestamptz not null default now(),
   synced_at timestamptz not null default now(),
-  primary key (item_id, skill),
-  -- le suivi appartient forcément au même compte que l'élément
-  foreign key (item_id, user_id) references public.es_items (id, user_id) on delete cascade
+  primary key (user_id, item_id, skill),
+  foreign key (user_id, item_id) references public.study_items (user_id, id) on delete cascade
 );
 
 -- L'historique : une ligne par réponse, jamais modifiée.
--- Sert aux stats, à la série de jours et plus tard à ajuster l'algorithme à ta mémoire.
-create table if not exists public.es_reviews (
-  id text primary key,
+-- Sert aux stats, aux objectifs et plus tard à ajuster l'algorithme à ta mémoire.
+create table if not exists public.study_reviews (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  id text not null,
   item_id text not null,
   skill text not null,
   -- 1 raté · 2 difficile · 3 correct · 4 facile
@@ -114,13 +123,14 @@ create table if not exists public.es_reviews (
   ms integer not null default 0 check (ms >= 0),
   reviewed_at timestamptz not null,
   synced_at timestamptz not null default now(),
-  foreign key (item_id, user_id) references public.es_items (id, user_id) on delete cascade
+  primary key (user_id, id),
+  foreign key (user_id, item_id) references public.study_items (user_id, id) on delete cascade
 );
 
-create index if not exists es_items_user_synced_idx on public.es_items (user_id, synced_at);
-create index if not exists es_progress_user_synced_idx on public.es_progress (user_id, synced_at);
-create index if not exists es_reviews_user_synced_idx on public.es_reviews (user_id, synced_at);
-create index if not exists es_reviews_item_idx on public.es_reviews (item_id, user_id);
+create index if not exists study_items_user_synced_idx on public.study_items (user_id, synced_at);
+create index if not exists study_progress_user_synced_idx on public.study_progress (user_id, synced_at);
+create index if not exists study_reviews_user_synced_idx on public.study_reviews (user_id, synced_at);
+create index if not exists study_reviews_item_idx on public.study_reviews (user_id, item_id);
 
 -- Horodatage côté serveur, que l'app ne peut pas fausser.
 create or replace function public.stamp_synced_at()
@@ -150,49 +160,49 @@ begin
 end;
 $$;
 
-drop trigger if exists es_items_insert on public.es_items;
-drop trigger if exists es_items_update on public.es_items;
-create trigger es_items_insert before insert on public.es_items for each row execute function public.stamp_synced_at();
-create trigger es_items_update before update on public.es_items for each row execute function public.keep_newest();
+drop trigger if exists study_items_insert on public.study_items;
+drop trigger if exists study_items_update on public.study_items;
+create trigger study_items_insert before insert on public.study_items for each row execute function public.stamp_synced_at();
+create trigger study_items_update before update on public.study_items for each row execute function public.keep_newest();
 
-drop trigger if exists es_progress_insert on public.es_progress;
-drop trigger if exists es_progress_update on public.es_progress;
-create trigger es_progress_insert before insert on public.es_progress for each row execute function public.stamp_synced_at();
-create trigger es_progress_update before update on public.es_progress for each row execute function public.keep_newest();
+drop trigger if exists study_progress_insert on public.study_progress;
+drop trigger if exists study_progress_update on public.study_progress;
+create trigger study_progress_insert before insert on public.study_progress for each row execute function public.stamp_synced_at();
+create trigger study_progress_update before update on public.study_progress for each row execute function public.keep_newest();
 
-drop trigger if exists es_reviews_insert on public.es_reviews;
-create trigger es_reviews_insert before insert on public.es_reviews for each row execute function public.stamp_synced_at();
+drop trigger if exists study_reviews_insert on public.study_reviews;
+create trigger study_reviews_insert before insert on public.study_reviews for each row execute function public.stamp_synced_at();
 
 -- Sécurité : chacun ne voit et ne modifie que ses propres lignes.
-alter table public.es_items enable row level security;
-alter table public.es_progress enable row level security;
-alter table public.es_reviews enable row level security;
+alter table public.study_items enable row level security;
+alter table public.study_progress enable row level security;
+alter table public.study_reviews enable row level security;
 
-drop policy if exists "es_items_select_own" on public.es_items;
-drop policy if exists "es_items_insert_own" on public.es_items;
-drop policy if exists "es_items_update_own" on public.es_items;
-drop policy if exists "es_items_delete_own" on public.es_items;
-create policy "es_items_select_own" on public.es_items for select to authenticated using ((select auth.uid()) = user_id);
-create policy "es_items_insert_own" on public.es_items for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy "es_items_update_own" on public.es_items for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
-create policy "es_items_delete_own" on public.es_items for delete to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "study_items_select_own" on public.study_items;
+drop policy if exists "study_items_insert_own" on public.study_items;
+drop policy if exists "study_items_update_own" on public.study_items;
+drop policy if exists "study_items_delete_own" on public.study_items;
+create policy "study_items_select_own" on public.study_items for select to authenticated using ((select auth.uid()) = user_id);
+create policy "study_items_insert_own" on public.study_items for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "study_items_update_own" on public.study_items for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "study_items_delete_own" on public.study_items for delete to authenticated using ((select auth.uid()) = user_id);
 
-drop policy if exists "es_progress_select_own" on public.es_progress;
-drop policy if exists "es_progress_insert_own" on public.es_progress;
-drop policy if exists "es_progress_update_own" on public.es_progress;
-drop policy if exists "es_progress_delete_own" on public.es_progress;
-create policy "es_progress_select_own" on public.es_progress for select to authenticated using ((select auth.uid()) = user_id);
-create policy "es_progress_insert_own" on public.es_progress for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy "es_progress_update_own" on public.es_progress for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
-create policy "es_progress_delete_own" on public.es_progress for delete to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "study_progress_select_own" on public.study_progress;
+drop policy if exists "study_progress_insert_own" on public.study_progress;
+drop policy if exists "study_progress_update_own" on public.study_progress;
+drop policy if exists "study_progress_delete_own" on public.study_progress;
+create policy "study_progress_select_own" on public.study_progress for select to authenticated using ((select auth.uid()) = user_id);
+create policy "study_progress_insert_own" on public.study_progress for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "study_progress_update_own" on public.study_progress for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "study_progress_delete_own" on public.study_progress for delete to authenticated using ((select auth.uid()) = user_id);
 
 -- L'historique ne se modifie pas : lecture, ajout et suppression seulement.
-drop policy if exists "es_reviews_select_own" on public.es_reviews;
-drop policy if exists "es_reviews_insert_own" on public.es_reviews;
-drop policy if exists "es_reviews_delete_own" on public.es_reviews;
-create policy "es_reviews_select_own" on public.es_reviews for select to authenticated using ((select auth.uid()) = user_id);
-create policy "es_reviews_insert_own" on public.es_reviews for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy "es_reviews_delete_own" on public.es_reviews for delete to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "study_reviews_select_own" on public.study_reviews;
+drop policy if exists "study_reviews_insert_own" on public.study_reviews;
+drop policy if exists "study_reviews_delete_own" on public.study_reviews;
+create policy "study_reviews_select_own" on public.study_reviews for select to authenticated using ((select auth.uid()) = user_id);
+create policy "study_reviews_insert_own" on public.study_reviews for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "study_reviews_delete_own" on public.study_reviews for delete to authenticated using ((select auth.uid()) = user_id);
 
-grant select, insert, update, delete on public.es_items, public.es_progress to authenticated;
-grant select, insert, delete on public.es_reviews to authenticated;
+grant select, insert, update, delete on public.study_items, public.study_progress to authenticated;
+grant select, insert, delete on public.study_reviews to authenticated;
