@@ -1,5 +1,5 @@
 import { Check, NotebookText, RotateCcw } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { COURSE, LESSONS } from '../../course/es'
 import { dueWords, lessonStatuses, nextLesson, todayActivity, type LessonStatus } from '../../course/progress'
 import type { LessonKind, Unit } from '../../course/types'
@@ -15,7 +15,8 @@ const KIND: Record<LessonKind, TKey> = {
   review: 'es.kind.review',
 }
 
-/** Le cours : la leçon conseillée en tête, puis toutes les unités. Tout est ouvert, l'ordre n'est qu'un conseil. */
+/** Le cours : à gauche le parcours (niveaux et unités), à droite la leçon conseillée puis toutes les unités.
+ *  Tout est ouvert, l'ordre n'est qu'un conseil. */
 export function CourseHome() {
   const t = useT()
   const progress = useStudy((s) => s.progress)
@@ -27,61 +28,100 @@ export function CourseHome() {
   const current = COURSE.find((l) => l.units.length > 0) ?? COURSE[0]
   const resume = next ?? LESSONS[0]
   const lessonNo = resume ? resume.unit.lessons.indexOf(resume.lesson) + 1 : 0
+  const main = useRef<HTMLDivElement>(null)
+  const doneIn = (u: Unit) => u.lessons.filter((l) => statuses.get(l.id)?.done).length
+
+  const scrollToUnit = (id: string) => main.current?.querySelector(`#${id}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
 
   return (
     <div className="es-course">
-      <ol className="es-levels" aria-label={t('es.levels')}>
-        {COURSE.map((l) => (
-          <li key={l.id} className={`${l === current ? 'current' : ''} ${l.units.length ? '' : 'soon'}`}>
-            <b>{l.id}</b>
-            <span>{l.units.length ? l.title : t('es.soon')}</span>
-          </li>
-        ))}
-      </ol>
-
-      {resume && (
-        <section className="es-resume" aria-label={t('es.nextLesson')}>
-          <div className="es-resume-main">
-            <p className="es-resume-where">
-              {next ? t('es.nextLesson') : t('es.allLessonsDone')} · {t('es.unitN', { n: resume.unit.number })}, {t('es.lessonN', { n: lessonNo })}
-            </p>
-            <h2>{resume.lesson.title}</h2>
-            <p className="es-resume-goal">{resume.lesson.goal}</p>
-            <button type="button" className="btn primary es-cta" onClick={() => openLesson(resume.lesson.id)}>
-              {next ? t('es.startLesson') : t('es.redoLesson')}
-            </button>
-          </div>
-          <div className="es-resume-side">
-            <h3>{t('es.today.title')}</h3>
-            <dl className="es-today">
-              <div>
-                <dt>{t('es.today.minutes')}</dt>
-                <dd>{today.minutes}</dd>
-              </div>
-              <div>
-                <dt>{t('es.today.lessons')}</dt>
-                <dd>{today.lessons}</dd>
-              </div>
-              <div>
-                <dt>{t('es.today.reviewed')}</dt>
-                <dd>{today.reviewed}</dd>
-              </div>
-            </dl>
-            {due > 0 && (
-              <button type="button" className="es-due-link" onClick={() => go({ section: 'review' })}>
-                <RotateCcw size={16} />
-                <span>{t('es.dueWords', { n: due })}</span>
+      <div className="es-course-main" ref={main}>
+        {resume && (
+          <section className="es-resume" aria-label={t('es.nextLesson')}>
+            <div className="es-resume-main">
+              <p className="es-resume-where">
+                {next ? t('es.nextLesson') : t('es.allLessonsDone')} · {t('es.unitN', { n: resume.unit.number })}, {t('es.lessonN', { n: lessonNo })}
+              </p>
+              <h2>{resume.lesson.title}</h2>
+              <p className="es-resume-goal">{resume.lesson.goal}</p>
+              <button type="button" className="btn primary es-cta" onClick={() => openLesson(resume.lesson.id)}>
+                {next ? t('es.startLesson') : t('es.redoLesson')}
               </button>
-            )}
-          </div>
-        </section>
-      )}
+            </div>
+            <div className="es-resume-side">
+              <h3>{t('es.today.title')}</h3>
+              <dl className="es-today">
+                <div>
+                  <dt>{t('es.today.minutes')}</dt>
+                  <dd>{today.minutes}</dd>
+                </div>
+                <div>
+                  <dt>{t('es.today.lessons')}</dt>
+                  <dd>{today.lessons}</dd>
+                </div>
+                <div>
+                  <dt>{t('es.today.reviewed')}</dt>
+                  <dd>{today.reviewed}</dd>
+                </div>
+              </dl>
+              {due > 0 && (
+                <button type="button" className="es-due-link" onClick={() => go({ section: 'review' })}>
+                  <RotateCcw size={16} />
+                  <span>{t('es.dueWords', { n: due })}</span>
+                </button>
+              )}
+            </div>
+          </section>
+        )}
 
-      {current.units.map((u) => (
-        <UnitBlock key={u.id} unit={u} statuses={statuses} nextId={next?.lesson.id} />
-      ))}
+        {current.units.map((u) => (
+          <UnitBlock key={u.id} unit={u} statuses={statuses} nextId={next?.lesson.id} />
+        ))}
+      </div>
 
-      {COURSE.filter((l) => l.units.length === 0).length > 0 && <p className="es-soon-note">{t('es.soonNote')}</p>}
+      <aside className="es-course-side" aria-label={t('es.path')}>
+        <h2 className="es-side-title">{t('es.path')}</h2>
+        <ol className="es-path">
+          {COURSE.map((l) => {
+            const total = l.units.reduce((n, u) => n + u.lessons.length, 0)
+            const done = l.units.reduce((n, u) => n + doneIn(u), 0)
+            return (
+              <li key={l.id} className={`${l === current ? 'current' : ''} ${l.units.length ? '' : 'soon'}`}>
+                <div className="es-path-level">
+                  <b>{l.id}</b>
+                  <span>{l.title}</span>
+                  <small>{l.units.length ? t('es.lessonsDone', { d: done, n: total }) : t('es.soon')}</small>
+                </div>
+                {l.units.length > 0 && (
+                  <>
+                    <div className="es-path-bar" aria-hidden>
+                      <span style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+                    </div>
+                    <ol className="es-path-units">
+                      {l.units.map((u) => {
+                        const d = doneIn(u)
+                        return (
+                          <li key={u.id}>
+                            <button type="button" onClick={() => scrollToUnit(u.id)} className={d === u.lessons.length ? 'done' : ''}>
+                              <span className="es-path-n">{u.number}</span>
+                              <span className="es-path-t">
+                                <b lang="es">{u.titleEs}</b>
+                                <small>{u.title}</small>
+                              </span>
+                              <span className="es-path-c">{d === u.lessons.length ? <Check size={14} strokeWidth={3} /> : `${d}/${u.lessons.length}`}</span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </>
+                )}
+              </li>
+            )
+          })}
+        </ol>
+        <p className="es-soon-note">{t('es.soonNote')}</p>
+      </aside>
     </div>
   )
 }
@@ -90,7 +130,7 @@ function UnitBlock({ unit, statuses, nextId }: { unit: Unit; statuses: Map<strin
   const t = useT()
   const done = unit.lessons.filter((l) => statuses.get(l.id)?.done).length
   return (
-    <section className="es-unit" aria-labelledby={`${unit.id}-title`}>
+    <section className="es-unit" id={unit.id} aria-labelledby={`${unit.id}-title`}>
       <header className="es-unit-head">
         <span className="es-unit-num" aria-hidden>
           {unit.number}
