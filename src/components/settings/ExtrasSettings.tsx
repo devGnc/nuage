@@ -5,9 +5,7 @@ import { deferredPrompt, onInstallable, promptInstall } from '../../lib/install'
 import { useSettings } from '../../store/settings'
 import type { Lang, SettingsTab } from '../../types'
 import { Row, Section, Segmented, Select, ToggleRow } from '../ui'
-
-const ACCENTS = ['#8b9cff', '#a78bfa', '#f472b6', '#fb7185', '#fb923c', '#facc15', '#4ade80', '#2dd4bf', '#38bdf8', '#e2e8f0']
-
+import { ALL_TABS } from './tabs'
 
 export function ExtrasSettings() {
   const t = useT()
@@ -16,25 +14,15 @@ export function ExtrasSettings() {
   const [canInstall, setCanInstall] = useState(!!deferredPrompt)
   useEffect(() => onWakeLockChange(setLockActive), [])
   useEffect(() => onInstallable(() => setCanInstall(true)), [])
-  const tabs: (SettingsTab | 'recent')[] = ['recent', 'themes', 'clock', 'timer', 'stats', 'quotes', 'extras', 'account', 'data', 'help']
+  const tabs: (SettingsTab | 'recent')[] = ['recent', ...ALL_TABS]
   return (
     <div className="settings-page">
       <Section>
         <Row label={t('extras.lang')}>
           <Segmented<Lang> value={s.lang} onChange={(v) => s.set({ lang: v })} options={[{ value: 'fr', label: 'Français' }, { value: 'en', label: 'English' }]} />
         </Row>
-        <Row label={t('extras.accent')}>
-          <div className="accent-row">
-            {ACCENTS.map((c) => (
-              <button key={c} type="button" className={`color-opt ${s.accent === c ? 'active' : ''}`} style={{ background: c }} onClick={() => s.set({ accent: c })} aria-label={c} />
-            ))}
-            <input type="color" className="color-input" value={s.accent} onChange={(e) => s.set({ accent: e.target.value })} aria-label={t('extras.accent')} />
-          </div>
-        </Row>
       </Section>
       <Section>
-        <ToggleRow label={t('extras.animated')} desc={t('extras.animatedDesc')} checked={s.disableAnimated} onChange={(v) => s.set({ disableAnimated: v })} />
-        <ToggleRow label={t('extras.clear')} desc={t('extras.clearDesc')} checked={s.clearMode} onChange={(v) => s.set({ clearMode: v })} />
         <ToggleRow
           label={t('extras.sleep')}
           desc={`${t('extras.sleepDesc')} ${!wakeLockSupported() ? t('extras.sleepNo') : s.preventSleep ? `· ${lockActive ? t('extras.sleepActive') : t('extras.sleepInactive')}` : ''}`}

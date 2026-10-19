@@ -1,33 +1,47 @@
 import { useT, type TKey } from '../../i18n'
 import { Section } from '../ui'
 
-const KEYS: [string, TKey][] = [
+const EVERYWHERE: [string, TKey][] = [
+  ['G', 'help.k.g'],
+  ['M', 'help.k.m'],
+  ['P', 'help.k.p'],
+  ['F', 'help.k.f'],
+  [',', 'help.k.comma'],
+  ['Échap / Esc', 'help.k.esc'],
+]
+
+const POMODORO: [string, TKey][] = [
   ['Espace / Space', 'help.k.space'],
   ['R', 'help.k.r'],
   ['S', 'help.k.s'],
   ['1 · 2 · 3', 'help.k.modes'],
   ['T', 'help.k.t'],
-  ['M', 'help.k.m'],
   ['N', 'help.k.n'],
-  ['F', 'help.k.f'],
-  ['P', 'help.k.p'],
-  [',', 'help.k.comma'],
-  ['Échap / Esc', 'help.k.esc'],
 ]
+
+function Keys({ list }: { list: [string, TKey][] }) {
+  const t = useT()
+  return (
+    <ul className="keys">
+      {list.map(([k, label]) => (
+        <li key={k}>
+          <kbd>{k}</kbd>
+          <span>{t(label)}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export function HelpSettings() {
   const t = useT()
   return (
     <div className="settings-page">
-      <Section title={t('help.shortcuts')}>
-        <ul className="keys">
-          {KEYS.map(([k, label]) => (
-            <li key={k}>
-              <kbd>{k}</kbd>
-              <span>{t(label)}</span>
-            </li>
-          ))}
-        </ul>
+      <Section title={t('help.everywhere')}>
+        <Keys list={EVERYWHERE} />
+      </Section>
+      <Section title={t('help.inPomodoro')}>
+        <Keys list={POMODORO} />
       </Section>
       <Section>
         <p>{t('help.about')}</p>

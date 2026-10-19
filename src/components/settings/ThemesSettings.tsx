@@ -3,12 +3,15 @@ import { useRef, useState } from 'react'
 import { useLang, useT } from '../../i18n'
 import { saveBlob } from '../../lib/idb'
 import { parseMusicUrl } from '../../music/parse'
+import { useRoute } from '../../shell/router'
 import { useSettings } from '../../store/settings'
 import { useUI } from '../../store/ui'
 import { useUploadUrl } from '../../themes/Background'
 import { THEMES, THEME_CATS, THEME_MAP, UPLOAD_ID, URL_PREFIX, YT_PREFIX, photoUrl, randomTheme, type ThemeCat, type ThemeDef } from '../../themes/catalog'
 import type { Mode } from '../../types'
-import { Section, Segmented, Select, Slider } from '../ui'
+import { Row, Section, Segmented, Select, Slider, ToggleRow } from '../ui'
+
+const ACCENTS = ['#8b9cff', '#a78bfa', '#f472b6', '#fb7185', '#fb923c', '#facc15', '#4ade80', '#2dd4bf', '#38bdf8', '#e2e8f0']
 
 function Thumb({ def, active, onClick, label }: { def: ThemeDef; active: boolean; onClick: () => void; label: string }) {
   const t = useT()
@@ -26,12 +29,15 @@ export function ThemesSettings() {
   const t = useT()
   const lang = useLang()
   const current = useSettings((s) => s.mode)
-  const [mode, setMode] = useState<Mode>(current)
+  // ouvert depuis un outil de révision, on montre le fond qu'il utilise : celui du mode Focus
+  const [mode, setMode] = useState<Mode>(useRoute.getState().tool === 'pomodoro' ? current : 'focus')
   const themes = useSettings((s) => s.themes)
   const dim = useSettings((s) => s.dim[mode])
   const blur = useSettings((s) => s.blur[mode])
   const uploads = useSettings((s) => s.uploads)
   const randomizer = useSettings((s) => s.randomizer)
+  const accent = useSettings((s) => s.accent)
+  const still = useSettings((s) => s.disableAnimated)
   const setFor = useSettings((s) => s.setFor)
   const set = useSettings((s) => s.set)
   const bgVersion = useUI((s) => s.bgVersion)
@@ -95,11 +101,25 @@ export function ThemesSettings() {
 
   return (
     <div className="settings-page">
-      <Segmented
-        value={mode}
-        onChange={setMode}
-        options={(['home', 'focus', 'ambient'] as Mode[]).map((m) => ({ value: m, label: t(`mode.${m}`) }))}
-      />
+      <Section>
+        <Row label={t('extras.accent')}>
+          <div className="accent-row">
+            {ACCENTS.map((c) => (
+              <button key={c} type="button" className={`color-opt ${accent === c ? 'active' : ''}`} style={{ background: c }} onClick={() => set({ accent: c })} aria-label={c} />
+            ))}
+            <input type="color" className="color-input" value={accent} onChange={(e) => set({ accent: e.target.value })} aria-label={t('extras.accent')} />
+          </div>
+        </Row>
+        <ToggleRow label={t('extras.animated')} desc={t('extras.animatedDesc')} checked={still} onChange={(v) => set({ disableAnimated: v })} />
+      </Section>
+
+      <Section title={t('themes.backgrounds')} desc={t('themes.backgroundsDesc')}>
+        <Segmented
+          value={mode}
+          onChange={setMode}
+          options={(['home', 'focus', 'ambient'] as Mode[]).map((m) => ({ value: m, label: t(`mode.${m}`) }))}
+        />
+      </Section>
       <div className="theme-preview" style={{ background: previewBg, backgroundSize: def?.size }}>
         <span className="theme-preview-dim" style={{ opacity: dim, backdropFilter: blur ? `blur(${blur / 2}px)` : undefined }} />
         <span className="theme-preview-time">25:00</span>

@@ -1,12 +1,18 @@
 # ☁️ Nuage
 
-Dashboard de focus gratuit qui tourne dans le navigateur : timer Pomodoro, tâches, ambiances sonores, musique, thèmes, statistiques et bloc-notes. Aucun compte requis, aucune pub, aucun traçage.
+Suite d'outils de travail gratuite qui tourne dans le navigateur : un Pomodoro complet (timer, tâches, ambiances sonores, musique, thèmes, statistiques, bloc-notes) et des outils de révision, à commencer par l'espagnol (en préparation, voir le [plan](docs/espagnol.md)). Aucun compte requis, aucune pub, aucun traçage.
 
 **App en ligne : https://devgnc.github.io/nuage/**
 
 ## Fonctionnalités
 
-**Trois modes**, chacun avec son propre fond :
+**Une suite d'outils**
+- Le bouton grille en haut à gauche (ou la touche G) ouvre le lanceur : Pomodoro, Espagnol, et les prochains outils.
+- Chaque outil a son adresse (`#/pomodoro`, `#/espagnol`) : favoris, bouton retour et raccourcis de l'app installée ouvrent directement le bon outil.
+- Changer d'outil ne recharge rien : le timer, les ambiances et la musique continuent, et le timer reste visible en haut à droite.
+- Paramètres communs (apparence, préférences, compte, données, aide) et paramètres propres à chaque outil. La couleur d'accent et les fonds sont les mêmes partout.
+
+**Pomodoro : trois modes**, chacun avec son propre fond :
 - **Accueil** : horloge, salutations qui changent selon l'heure et le jour, citation.
 - **Focus** : tâche en cours, timer, compteur de sessions, contrôles.
 - **Ambiance** : fond plein écran avec un mini-timer.
@@ -47,17 +53,19 @@ Dashboard de focus gratuit qui tourne dans le navigateur : timer Pomodoro, tâch
 
 ### Raccourcis clavier
 
-| Touche | Action |
-| --- | --- |
-| Espace | Démarrer / pause |
-| R | Réinitialiser |
-| S | Segment suivant |
-| 1 · 2 · 3 | Accueil / Focus / Ambiance |
-| T · M · N | Tâches / Sons / Bloc-notes |
-| F | Plein écran |
-| P | Fenêtre flottante |
-| , | Réglages |
-| Échap | Fermer |
+| Touche | Action | Où |
+| --- | --- | --- |
+| G | Changer d'outil | partout |
+| M | Sons et musique | partout |
+| P | Fenêtre flottante du timer | partout |
+| F | Plein écran | partout |
+| , | Paramètres | partout |
+| Échap | Fermer | partout |
+| Espace | Démarrer / pause | Pomodoro |
+| R | Réinitialiser | Pomodoro |
+| S | Segment suivant | Pomodoro |
+| 1 · 2 · 3 | Accueil / Focus / Ambiance | Pomodoro |
+| T · N | Tâches / Bloc-notes | Pomodoro |
 
 ## Développement
 
@@ -84,7 +92,7 @@ Sans Supabase, tout est enregistré dans le navigateur. Pour retrouver tes régl
 3. Dans **Authentication → URL Configuration**, mets `https://devgnc.github.io/nuage/` comme **Site URL** et ajoute-la aux **Redirect URLs**.
 4. Récupère l'URL du projet et la clé publique (**publishable** ou **anon**) via le bouton **Connect** du projet, ou dans **Settings → API Keys**. Cette clé est faite pour être exposée dans une app web : ce sont les règles RLS qui protègent les données. N'utilise jamais la clé secrète.
 5. Deux options :
-   - **Dans l'app** : Réglages → Compte & synchro → colle l'URL et la clé.
+   - **Dans l'app** : Paramètres → Compte & synchro → colle l'URL et la clé.
    - **Au déploiement** : dans le repo, **Settings → Secrets and variables → Actions → Variables**, crée `SUPABASE_URL` et `SUPABASE_ANON_KEY`, puis relance le workflow.
 
 Pour la connexion Google, active le fournisseur Google dans **Authentication → Providers** (il faut un identifiant OAuth Google Cloud). L'email + mot de passe et le lien magique marchent sans configuration supplémentaire.

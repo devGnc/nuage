@@ -1,8 +1,9 @@
-import { ChartColumn, CircleHelp, Clock, Database, Palette, Quote, Sparkles, Timer, User, X } from 'lucide-react'
+import { ChartColumn, CircleHelp, Clock, Database, Palette, Quote, SlidersHorizontal, Timer, User, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useT } from '../../i18n'
 import { useUI } from '../../store/ui'
 import type { SettingsTab } from '../../types'
+import { ALL_TABS, SETTINGS_GROUPS } from './tabs'
 import { AccountSettings } from './AccountSettings'
 import { ClockSettings } from './ClockSettings'
 import { DataSettings } from './DataSettings'
@@ -13,17 +14,17 @@ import { StatsSettings } from './StatsSettings'
 import { ThemesSettings } from './ThemesSettings'
 import { TimerSettings } from './TimerSettings'
 
-const NAV: { id: SettingsTab; icon: React.ReactNode }[] = [
-  { id: 'themes', icon: <Palette size={17} /> },
-  { id: 'clock', icon: <Clock size={17} /> },
-  { id: 'timer', icon: <Timer size={17} /> },
-  { id: 'stats', icon: <ChartColumn size={17} /> },
-  { id: 'quotes', icon: <Quote size={17} /> },
-  { id: 'extras', icon: <Sparkles size={17} /> },
-  { id: 'account', icon: <User size={17} /> },
-  { id: 'data', icon: <Database size={17} /> },
-  { id: 'help', icon: <CircleHelp size={17} /> },
-]
+const ICONS: Record<SettingsTab, React.ReactNode> = {
+  themes: <Palette size={17} />,
+  extras: <SlidersHorizontal size={17} />,
+  account: <User size={17} />,
+  data: <Database size={17} />,
+  help: <CircleHelp size={17} />,
+  timer: <Timer size={17} />,
+  clock: <Clock size={17} />,
+  stats: <ChartColumn size={17} />,
+  quotes: <Quote size={17} />,
+}
 
 const SUBTITLE = {
   themes: 'themes.subtitle',
@@ -40,7 +41,9 @@ const SUBTITLE = {
 export function SettingsDrawer() {
   const t = useT()
   const open = useUI((s) => s.settingsOpen)
-  const tab = useUI((s) => s.settingsTab)
+  const stored = useUI((s) => s.settingsTab)
+  // un onglet inconnu (ancienne version, autre appareil) retombe sur Apparence
+  const tab: SettingsTab = ALL_TABS.includes(stored) ? stored : 'themes'
   const setTab = useUI((s) => s.setTab)
   const close = useUI((s) => s.closeSettings)
 
@@ -59,11 +62,16 @@ export function SettingsDrawer() {
           <div className="drawer-brand">
             <span className="logo-mark" aria-hidden="true">☁</span> Nuage
           </div>
-          {NAV.map((n) => (
-            <button key={n.id} type="button" className={`nav-item ${tab === n.id ? 'active' : ''}`} onClick={() => setTab(n.id)}>
-              {n.icon}
-              <span>{t(`set.${n.id}`)}</span>
-            </button>
+          {SETTINGS_GROUPS.map((g) => (
+            <div key={g.label} className="nav-group" role="group" aria-label={t(g.label)}>
+              <span className="nav-group-label">{t(g.label)}</span>
+              {g.tabs.map((id) => (
+                <button key={id} type="button" className={`nav-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
+                  {ICONS[id]}
+                  <span>{t(`set.${id}`)}</span>
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="drawer-main">
