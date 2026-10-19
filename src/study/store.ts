@@ -153,6 +153,24 @@ export function addItems(list: StudyItem[]): { added: number; existing: number }
   return { added: changed.length, existing }
 }
 
+/** Contenu fourni avec l'app (cours) : ajoute ce qui manque et met à jour ce qui a changé dans une nouvelle version. */
+export function ensureItems(list: StudyItem[]) {
+  const s = useStudy.getState()
+  const items = { ...s.items }
+  const changed: string[] = []
+  const now = Date.now()
+  for (const it of list) {
+    const cur = items[it.id]
+    if (cur && !cur.deletedAt && cur.front === it.front && cur.back === it.back && cur.example === it.example && cur.topic === it.topic && cur.kind === it.kind && JSON.stringify(cur.extra) === JSON.stringify(it.extra)) continue
+    items[it.id] = { ...it, createdAt: cur?.createdAt ?? now, updatedAt: now, deletedAt: null }
+    changed.push(it.id)
+  }
+  if (changed.length) {
+    useStudy.setState({ items, dirty: withDirty(s.dirty, { items: changed }) })
+    touch({ items: true })
+  }
+}
+
 /** Crée ou modifie un élément. */
 export function saveItem(item: StudyItem) {
   const s = useStudy.getState()
