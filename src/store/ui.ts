@@ -11,6 +11,8 @@ interface Toast {
 
 interface UIStore {
   panel: Panel
+  /** Lanceur d'outils (bouton grille) ouvert. */
+  launcherOpen: boolean
   settingsOpen: boolean
   settingsTab: SettingsTab
   soundsTab: SoundsTab
@@ -22,6 +24,8 @@ interface UIStore {
   bumpBg: () => void
   togglePanel: (p: Exclude<Panel, null>) => void
   closePanel: () => void
+  toggleLauncher: () => void
+  closeLauncher: () => void
   openSettings: (tab?: SettingsTab) => void
   closeSettings: () => void
   setTab: (tab: SettingsTab) => void
@@ -41,6 +45,7 @@ function readLastTab(): SettingsTab {
 
 export const useUI = create<UIStore>()((set, get) => ({
   panel: null,
+  launcherOpen: false,
   settingsOpen: false,
   settingsTab: readLastTab(),
   soundsTab: 'sounds',
@@ -50,9 +55,11 @@ export const useUI = create<UIStore>()((set, get) => ({
   fullscreen: false,
   bgVersion: 0,
   bumpBg: () => set((s) => ({ bgVersion: s.bgVersion + 1 })),
-  togglePanel: (p) => set((s) => ({ panel: s.panel === p ? null : p })),
+  togglePanel: (p) => set((s) => ({ panel: s.panel === p ? null : p, launcherOpen: false })),
   closePanel: () => set({ panel: null }),
-  openSettings: (tab) => set({ settingsOpen: true, panel: null, ...(tab ? { settingsTab: tab } : {}) }),
+  toggleLauncher: () => set((s) => ({ launcherOpen: !s.launcherOpen, panel: null })),
+  closeLauncher: () => set({ launcherOpen: false }),
+  openSettings: (tab) => set({ settingsOpen: true, panel: null, launcherOpen: false, ...(tab ? { settingsTab: tab } : {}) }),
   closeSettings: () => set({ settingsOpen: false }),
   setTab: (tab) => {
     try {

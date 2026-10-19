@@ -119,6 +119,7 @@ export function TimerSettings() {
         <ToggleRow label={t('timer.pipTask')} checked={s.pipShowTask} onChange={(v) => s.set({ pipShowTask: v })} />
         <ToggleRow label={t('timer.streak')} checked={s.showStreak} onChange={(v) => s.set({ showStreak: v })} />
         <ToggleRow label={t('timer.weekends')} checked={s.weekendsSafe} onChange={(v) => s.set({ weekendsSafe: v })} />
+        <ToggleRow label={t('extras.clear')} desc={t('extras.clearDesc')} checked={s.clearMode} onChange={(v) => s.set({ clearMode: v })} />
       </Section>
 
       <Section title={t('timer.alert')}>

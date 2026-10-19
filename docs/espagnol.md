@@ -1,6 +1,6 @@
 # Plateforme de révisions — plan
 
-**Statut : en préparation.** Rien n'est encore codé dans l'app. Ce document rassemble les décisions prises avant d'écrire le code ; la base de données, elle, est prête dans [`supabase/schema.sql`](../supabase/schema.sql).
+**Statut : en préparation.** La suite (lanceur, paramètres généraux, thème commun) est en place ; l'outil Espagnol n'est encore qu'une page d'attente. Ce document rassemble les décisions prises avant d'écrire le code ; la base de données, elle, est prête dans [`supabase/schema.sql`](../supabase/schema.sql).
 
 ## Décisions prises
 
@@ -70,7 +70,7 @@ Les objectifs et le rythme sont des réglages : ils sont rangés avec les param�
 
 ## Étapes
 
-1. **La suite** : lanceur, adresse par outil, paramètres généraux, thème commun. Le Pomodoro est réorganisé sans rien perdre.
+1. **La suite** ✅ : lanceur, adresse par outil, paramètres généraux, thème commun. Le Pomodoro est réorganisé sans rien perdre.
 2. **Le moteur de révision et l'outil Espagnol** : import (Anki, CSV, Markdown), liste des éléments, séance du jour avec FSRS.
 3. **Les objectifs** : création, priorités, projection, mode pause.
 4. **Les exercices** : réponse tapée, écoute et dictée, conjugaison, phrases à trous.
@@ -81,6 +81,6 @@ En parallèle : le référentiel et le contenu de base, bloc par bloc.
 
 ## Questions ouvertes
 
-- Fond de l'outil Espagnol : celui du mode Focus du Pomodoro, ou un fond à lui dans Apparence ?
+- Fond de l'outil Espagnol : pour l'instant celui du mode Focus du Pomodoro. Le garder, ou lui donner un fond à lui dans Apparence ?
 - Deck Top 5000 : ajouter une traduction française et une phrase d'exemple par mot (l'anglais reste en complément) ? Garder les images ?
 - Série de jours : la garder avec des jours de repos autorisés, ou afficher plutôt les jours actifs par semaine ?

@@ -19,6 +19,11 @@ export default defineConfig({
         display: 'standalone',
         start_url: './',
         scope: './',
+        // appui long sur l'icône de l'app installée : ouvrir directement un outil
+        shortcuts: [
+          { name: 'Pomodoro', url: './#/pomodoro', icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Espagnol', url: './#/espagnol', icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }] },
+        ],
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
