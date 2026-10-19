@@ -8,17 +8,20 @@ import type { SettingsTab } from '../../types'
 export const SETTINGS_GROUPS: { label: TKey; tabs: SettingsTab[] }[] = [
   { label: 'set.group.general', tabs: ['themes', 'extras', 'account', 'data', 'help'] },
   { label: 'set.group.pomodoro', tabs: ['timer', 'clock', 'stats', 'quotes'] },
+  { label: 'set.group.espagnol', tabs: ['espagnol'] },
 ]
 
 export const ALL_TABS: SettingsTab[] = SETTINGS_GROUPS.flatMap((g) => g.tabs)
 const POMODORO_TABS = SETTINGS_GROUPS[1].tabs
 
 /** Ouvre les réglages sur l'onglet choisi dans Préférences, ou le dernier consulté.
- *  Hors du Pomodoro, un onglet propre au Pomodoro laisse la place à Apparence. */
+ *  Un onglet propre à un autre outil laisse la place à celui de l'outil en cours. */
 export function openSettingsDefault() {
   const d = useSettings.getState().defaultTab
   let tab: SettingsTab = d === 'recent' || !ALL_TABS.includes(d) ? useUI.getState().settingsTab : d
   if (!ALL_TABS.includes(tab)) tab = 'themes'
-  if (useRoute.getState().tool !== 'pomodoro' && POMODORO_TABS.includes(tab)) tab = 'themes'
+  const tool = useRoute.getState().tool
+  if (tool === 'espagnol' && POMODORO_TABS.includes(tab)) tab = 'espagnol'
+  if (tool === 'pomodoro' && tab === 'espagnol') tab = 'timer'
   useUI.getState().openSettings(tab)
 }

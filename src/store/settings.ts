@@ -63,6 +63,13 @@ export interface Settings {
   savedMixes: SavedMix[]
   musicVolume: number
   musicFavorites: MusicFavorite[]
+
+  // Espagnol
+  esNewPerDay: number
+  esMaxReviews: number
+  /** voix choisie (identifiant du navigateur) ; vide = automatique */
+  esVoice: string
+  esAutoSpeak: boolean
 }
 
 const browserLang: Lang =
@@ -123,6 +130,11 @@ export const defaultSettings: Settings = {
   savedMixes: [],
   musicVolume: 0.7,
   musicFavorites: [],
+
+  esNewPerDay: 15,
+  esMaxReviews: 200,
+  esVoice: '',
+  esAutoSpeak: false,
 }
 
 interface SettingsStore extends Settings {

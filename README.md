@@ -1,6 +1,6 @@
 # ☁️ Nuage
 
-Suite d'outils de travail gratuite qui tourne dans le navigateur : un Pomodoro complet (timer, tâches, ambiances sonores, musique, thèmes, statistiques, bloc-notes) et des outils de révision, à commencer par l'espagnol (en préparation, voir le [plan](docs/espagnol.md)). Aucun compte requis, aucune pub, aucun traçage.
+Suite d'outils de travail gratuite qui tourne dans le navigateur : un Pomodoro complet (timer, tâches, ambiances sonores, musique, thèmes, statistiques, bloc-notes) et des outils de révision, à commencer par l'espagnol (voir le [plan](docs/espagnol.md)). Aucun compte requis, aucune pub, aucun traçage.
 
 **App en ligne : https://devgnc.github.io/nuage/**
 
@@ -11,6 +11,15 @@ Suite d'outils de travail gratuite qui tourne dans le navigateur : un Pomodoro c
 - Chaque outil a son adresse (`#/pomodoro`, `#/espagnol`) : favoris, bouton retour et raccourcis de l'app installée ouvrent directement le bon outil.
 - Changer d'outil ne recharge rien : le timer, les ambiances et la musique continuent, et le timer reste visible en haut à droite.
 - Paramètres communs (apparence, préférences, compte, données, aide) et paramètres propres à chaque outil. La couleur d'accent et les fonds sont les mêmes partout.
+
+**Espagnol : révisions par répétition espacée**
+- Import d'un paquet Anki (`.apkg`), d'un tableur CSV ou de notes Markdown. Le fichier est lu sur l'appareil ; images et sons des paquets Anki ne sont pas repris.
+- Séance du jour avec l'algorithme FSRS : les révisions dues d'abord, puis les nouvelles cartes, avec un nombre par jour réglable. Les paquets sont mélangés, et après une pause les révisions en retard sont étalées au lieu de s'accumuler.
+- Quatre réponses (à revoir, difficile, correct, facile) avec la prochaine échéance affichée, et annulation de la dernière réponse.
+- Cartes : recherche, filtres (nouvelles, en cours, maîtrisées, suspendues), modification, suspension, ajout.
+- Fiches : notes de cours en Markdown découpées par section, à relire.
+- Prononciation par la voix espagnole de l'appareil.
+- Synchronisé entre appareils avec Supabase et inclus dans la sauvegarde JSON.
 
 **Pomodoro : trois modes**, chacun avec son propre fond :
 - **Accueil** : horloge, salutations qui changent selon l'heure et le jour, citation.
@@ -66,6 +75,10 @@ Suite d'outils de travail gratuite qui tourne dans le navigateur : un Pomodoro c
 | S | Segment suivant | Pomodoro |
 | 1 · 2 · 3 | Accueil / Focus / Ambiance | Pomodoro |
 | T · N | Tâches / Bloc-notes | Pomodoro |
+| Espace | Retourner la carte, puis « Correct » | Espagnol |
+| 1 · 2 · 3 · 4 | À revoir / Difficile / Correct / Facile | Espagnol |
+| L | Écouter le mot | Espagnol |
+| Ctrl+Z | Annuler la dernière réponse | Espagnol |
 
 ## Développement
 
@@ -75,7 +88,7 @@ npm run dev      # http://localhost:5173
 npm run build    # vérifie les types puis génère dist/
 ```
 
-Stack : Vite, React, TypeScript, Zustand (état persistant dans localStorage et IndexedDB), Tiptap (bloc-notes), dnd-kit (glisser-déposer), Supabase (synchro facultative).
+Stack : Vite, React, TypeScript, Zustand (état persistant dans localStorage et IndexedDB), Tiptap (bloc-notes), dnd-kit (glisser-déposer), Supabase (synchro facultative), ts-fsrs (répétition espacée), sql.js et fflate (lecture des paquets Anki), marked (fiches).
 
 ## Déploiement sur GitHub Pages
 

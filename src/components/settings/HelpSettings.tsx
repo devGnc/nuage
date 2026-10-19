@@ -19,6 +19,13 @@ const POMODORO: [string, TKey][] = [
   ['N', 'help.k.n'],
 ]
 
+const ESPAGNOL: [string, TKey][] = [
+  ['Espace / Space', 'help.k.esReveal'],
+  ['1 · 2 · 3 · 4', 'help.k.esGrade'],
+  ['L', 'help.k.esListen'],
+  ['Ctrl+Z', 'help.k.esUndo'],
+]
+
 function Keys({ list }: { list: [string, TKey][] }) {
   const t = useT()
   return (
@@ -42,6 +49,9 @@ export function HelpSettings() {
       </Section>
       <Section title={t('help.inPomodoro')}>
         <Keys list={POMODORO} />
+      </Section>
+      <Section title={t('help.inEspagnol')}>
+        <Keys list={ESPAGNOL} />
       </Section>
       <Section>
         <p>{t('help.about')}</p>

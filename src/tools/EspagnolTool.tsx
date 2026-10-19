@@ -1,11 +1,33 @@
-import { useT } from '../i18n'
+import { BookOpen, CalendarCheck, FileUp, Layers } from 'lucide-react'
+import { useEffect } from 'react'
 import { SoundsButton, SuiteButtons } from '../components/Toolbar'
-import { ToolIcon } from '../shell/tools'
+import { useT, type TKey } from '../i18n'
+import { loadStudy, useStudy } from '../study/store'
+import { startStudySync } from '../study/sync'
 import { useUI } from '../store/ui'
+import { Cards } from './espagnol/Cards'
+import { Import } from './espagnol/Import'
+import { Notes } from './espagnol/Notes'
+import { goSection, useSection, type Section } from './espagnol/sections'
+import { Today } from './espagnol/Today'
 
-/** Outil Espagnol. Pour l'instant une page d'attente : le moteur de révision arrive à l'étape suivante. */
+const NAV: { id: Section; icon: React.ReactNode; label: TKey }[] = [
+  { id: 'today', icon: <CalendarCheck size={19} />, label: 'es.today' },
+  { id: 'cards', icon: <Layers size={19} />, label: 'es.cards' },
+  { id: 'notes', icon: <BookOpen size={19} />, label: 'es.notes' },
+  { id: 'import', icon: <FileUp size={19} />, label: 'es.import' },
+]
+
+/** Outil Espagnol : séance du jour, cartes, fiches et import. Les données restent sur l'appareil et se synchronisent. */
 export default function EspagnolTool() {
   const t = useT()
+  const ready = useStudy((s) => s.ready)
+  const section = useSection()
+
+  useEffect(() => {
+    loadStudy().then(startStudySync)
+  }, [])
+
   return (
     <main
       className="stage"
@@ -15,21 +37,31 @@ export default function EspagnolTool() {
       }}
     >
       <header className="top" />
-      <div className="center">
-        <section className="surface tool-soon" aria-labelledby="es-title">
-          <ToolIcon id="espagnol" large />
-          <h1 id="es-title">{t('tool.espagnol')}</h1>
-          <p>{t('es.soon')}</p>
-          <ul>
-            <li>{t('es.soon.session')}</li>
-            <li>{t('es.soon.import')}</li>
-            <li>{t('es.soon.goals')}</li>
-          </ul>
+      <div className="center es-center">
+        <section className="surface es-panel" aria-label={t('tool.espagnol')}>
+          {!ready ? null : section === 'today' ? <Today /> : section === 'cards' ? <Cards /> : section === 'notes' ? <Notes /> : <Import />}
         </section>
       </div>
       <nav className="toolbar" aria-label={t('tool.espagnol')}>
         <div className="tb-group">
           <SoundsButton />
+        </div>
+        <div className="tb-modes" role="tablist" aria-label={t('tool.espagnol')}>
+          {NAV.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              role="tab"
+              aria-selected={section === n.id}
+              className={`tb-mode ${section === n.id ? 'active' : ''}`}
+              onClick={() => goSection(n.id)}
+              aria-label={t(n.label)}
+              title={t(n.label)}
+            >
+              {n.icon}
+              {section === n.id && <span className="tb-mode-label">{t(n.label)}</span>}
+            </button>
+          ))}
         </div>
         <SuiteButtons />
       </nav>
