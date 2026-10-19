@@ -1,20 +1,38 @@
-import { Volume2 } from 'lucide-react'
+import { Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Pos } from '../../course/types'
 import { useT, type TKey } from '../../i18n'
 import { useSettings } from '../../store/settings'
-import { speak, speechSupported } from './speech'
+import { useUI } from '../../store/ui'
+import { platform, speak, useVoiceStatus } from './speech'
 
 /** Bouton « écouter » : lit l'espagnol avec la voix choisie dans les paramètres. */
 export function SpeakButton({ text, alt, big, auto, slow }: { text: string; alt?: boolean; big?: boolean; auto?: boolean; slow?: boolean }) {
   const t = useT()
   const voice = useSettings((s) => s.esVoice)
   const autoSpeak = useSettings((s) => s.esAutoSpeak)
+  const status = useVoiceStatus()
   useEffect(() => {
     if (auto && autoSpeak) speak(text, { voice, alt })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text])
-  if (!speechSupported()) return null
+  if (status === 'unsupported') return null
+  // pas de voix espagnole : le bouton reste à sa place, barré, et renvoie aux réglages de la voix
+  if (status === 'missing')
+    return (
+      <button
+        type="button"
+        className={`es-speak off ${big ? 'big' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          useUI.getState().openSettings('espagnol')
+        }}
+        aria-label={t('es.voice.missingTitle')}
+        title={t('es.voice.missingTitle')}
+      >
+        <VolumeX size={big ? 26 : 17} />
+      </button>
+    )
   return (
     <button
       type="button"
@@ -108,4 +126,52 @@ export function PosLabel({ pos }: { pos?: Pos }) {
   const t = useT()
   if (!pos) return null
   return <span className={`es-pos p-${pos}`}>{t(POS_LABEL[pos])}</span>
+}
+
+const HOW: Record<ReturnType<typeof platform>, TKey> = {
+  mac: 'es.voice.how.mac',
+  ios: 'es.voice.how.ios',
+  windows: 'es.voice.how.windows',
+  android: 'es.voice.how.android',
+  other: 'es.voice.how.other',
+}
+
+const DISMISS = 'nuage:es:voiceNotice'
+
+/** Avertissement quand l'appareil n'a aucune voix espagnole, avec la marche à suivre pour en installer une. */
+export function VoiceNotice({ inSettings }: { inSettings?: boolean }) {
+  const t = useT()
+  const status = useVoiceStatus()
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return sessionStorage.getItem(DISMISS) === '1'
+    } catch {
+      return false
+    }
+  })
+  if (status !== 'missing' || (hidden && !inSettings)) return null
+  const dismiss = () => {
+    setHidden(true)
+    try {
+      sessionStorage.setItem(DISMISS, '1')
+    } catch {
+      /* stockage indisponible : l'avertissement reviendra */
+    }
+  }
+  return (
+    <div className={`es-voice-notice ${inSettings ? 'in-settings' : ''}`} role="status">
+      <VolumeX size={20} />
+      <div className="es-voice-notice-text">
+        <strong>{t('es.voice.missingTitle')}</strong>
+        <p>{t('es.voice.missingDesc')}</p>
+        <p>{t(HOW[platform()])}</p>
+        <p>{t('es.voice.online')}</p>
+      </div>
+      {!inSettings && (
+        <button type="button" className="icon-btn" onClick={dismiss} aria-label={t('es.voice.dismiss')} title={t('es.voice.dismiss')}>
+          <X size={17} />
+        </button>
+      )}
+    </div>
+  )
 }
