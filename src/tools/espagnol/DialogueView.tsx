@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Dialogue } from '../../course/types'
 import { useT } from '../../i18n'
 import { useSettings } from '../../store/settings'
-import { speak, speechSupported, stopSpeaking } from './speech'
+import { speak, stopSpeaking, useVoiceStatus } from './speech'
 
 /** Un dialogue en bulles : chaque réplique se lit d'un clic, « Tout écouter » enchaîne les voix. */
 export function DialogueView({ d, compact, showTitle = true }: { d: Dialogue; compact?: boolean; showTitle?: boolean }) {
@@ -13,6 +13,8 @@ export function DialogueView({ d, compact, showTitle = true }: { d: Dialogue; co
   const [playing, setPlaying] = useState<number | null>(null)
   const [all, setAll] = useState(false)
   const run = useRef(0)
+  const status = useVoiceStatus()
+  const canSpeak = status !== 'missing' && status !== 'unsupported'
 
   // le premier personnage à gauche, le deuxième à droite, et ainsi de suite
   const speakers = useMemo(() => [...new Set(d.lines.map((l) => l.who))], [d])
@@ -67,7 +69,7 @@ export function DialogueView({ d, compact, showTitle = true }: { d: Dialogue; co
         </header>
       )}
       <div className="es-dialogue-tools">
-        {speechSupported() && (
+        {canSpeak && (
           <button type="button" className={`btn small ${all ? 'primary' : ''}`} onClick={playAll}>
             {all ? <Square size={14} /> : <Play size={14} />}
             {all ? t('es.dlg.stop') : t('es.dlg.playAll')}
@@ -82,7 +84,7 @@ export function DialogueView({ d, compact, showTitle = true }: { d: Dialogue; co
         {d.lines.map((l, i) => (
           <li key={i} className={`es-line side-${side(l.who)} ${playing === i ? 'playing' : ''}`}>
             <span className="es-who">{l.who}</span>
-            <button type="button" className="es-bubble" onClick={() => (speechSupported() ? playOne(i) : setShowFr(!showFr))} lang="es">
+            <button type="button" className="es-bubble" onClick={() => (canSpeak ? playOne(i) : setShowFr(!showFr))} lang="es">
               {l.es}
             </button>
             {showFr && (

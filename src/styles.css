@@ -5334,6 +5334,60 @@ kbd {
   font-size: 0.92em;
 }
 
+/* Pas de voix espagnole sur l'appareil */
+.es-panel > .es-voice-notice {
+  flex: none;
+}
+
+.es-voice-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 16px var(--gut) 0;
+  padding: 12px 12px 12px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--warn, #fcc56b) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn, #fcc56b) 35%, transparent);
+}
+
+.es-voice-notice > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn, #fcc56b);
+}
+
+.es-voice-notice-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.es-voice-notice strong {
+  display: block;
+  font-size: 14.5px;
+}
+
+.es-voice-notice p {
+  margin: 4px 0 0;
+  max-width: 90ch;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.es-voice-notice.in-settings {
+  margin: 0 0 12px;
+}
+
+.es-speak.off {
+  background: var(--panel-2);
+  color: var(--text-faint);
+}
+
+.es-speak.big.off {
+  background: var(--panel-3);
+  color: var(--text-soft);
+}
+
 /* Badge de la barre d'outils : mots à réviser */
 .tb-badge {
   position: absolute;

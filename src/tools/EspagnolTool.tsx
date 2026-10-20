@@ -11,6 +11,7 @@ import { LessonPlayer } from './espagnol/LessonPlayer'
 import { Notebook } from './espagnol/Notebook'
 import { Review } from './espagnol/Review'
 import { go, useRoute, type Route, type Section } from './espagnol/sections'
+import { VoiceNotice } from './espagnol/ui'
 
 const NAV: { id: Section; icon: React.ReactNode; label: TKey; to: Route }[] = [
   { id: 'course', icon: <GraduationCap size={19} />, label: 'es.course', to: { section: 'course' } },
@@ -47,6 +48,7 @@ export default function EspagnolTool() {
       <header className="top" />
       <div className="center es-center">
         <section className="surface es-panel" aria-label={t('tool.espagnol')}>
+          {ready && <VoiceNotice />}
           {view}
         </section>
       </div>
